@@ -1,9 +1,9 @@
 import os
+import argparse
 from dotenv import load_dotenv
 from google import genai
-import argparse
 from google.genai import types
-
+from prompts import system_prompt
 
 
 
@@ -28,7 +28,10 @@ def main():
 
     response = client.models.generate_content(
         model="gemini-2.5-flash",
-        contents=messages
+        contents=messages,
+        config=types.GenerateContentConfig(
+            system_instruction=system_prompt,
+            temperature=0)
     )
     if response.usage_metadata is None:
         raise RuntimeError("API request failed: No usage metadata returned")
