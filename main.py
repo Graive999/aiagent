@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from prompts import system_prompt
+from call_function import function_map 
+from call_function import call_function
 from call_function import available_functions
-
-
 
 
 
@@ -47,12 +47,24 @@ def main():
 
 
     if response.function_calls:
-        for function_call in response.function_calls:
-            print(f"Calling function: {function_call.name}({function_call.args})")
+        function_results = []
+        for fc in response.function_calls:
+            result_content = call_function(fc, verbose=args.verbose)
+        
+            if (
+                not result_content.parts 
+                or not result_content.parts[0].function_response
+                or result_content.parts[0].function_response.response is None
+            ):
+                raise Exception("Invalid function response structure")
+             
+            function_results.append(result_content.parts[0])
+        
+            if args.verbose:
+                print(f"-> {result_content.parts[0].function_response.response}")
+
     else:
         print(response.text)
-
-
 
 
 if __name__ == "__main__":
